@@ -1,0 +1,12 @@
+{
+  "name": "landing-page",
+  "version": "1.0.0",
+  "description": "Simple landing page",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
