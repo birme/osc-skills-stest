@@ -39,6 +39,9 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 
 ### 4. Correctness
 - Wrong HTTP status codes, incorrect Express middleware ordering, missing error handling on async paths.
+- Any `async` route handler or middleware that does not wrap its body in `try/catch` and call `next(err)` on failure is `[blocking]`.
+- Any route handler that calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path (double-send bug) is `[blocking]`.
+- If the diff adds or modifies test files: verify that `index.js` exports `app` and that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.
@@ -48,6 +51,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 
 ### 6. Regression risk
 - Existing routes still reachable and returning the same responses.
+- `express.static('public')` mount still present and before any new route definitions.
 
 ### 7. Conventions
 - CommonJS (`require`) — not ESM `import` unless `package.json` has `"type": "module"`.
@@ -67,29 +71,24 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 
 Post a **single** verdict comment on the PR in this exact structure:
 
-```
 Verdict: APPROVE
-```
 or
-```
 Verdict: REQUEST CHANGES
-```
 
 Followed by:
 
-```
 ## Acceptance Criteria
-- [criterion 1] ✅ / ❌ — <one-line explanation>
-- [criterion 2] ✅ / ❌ — <one-line explanation>
+- [criterion 1] pass/fail — one-line explanation
+- [criterion 2] pass/fail — one-line explanation
 
 ## Issues
-- [blocking] <file>:<line> — <fabricated reference / stub / missed criterion — description and why it matters>
-- [nit] <file>:<line> — <optional improvement>
+- [blocking] file:line — fabricated reference / stub / missed criterion and why it matters
+- [nit] file:line — optional improvement
 
 ## Risks not tested
-- <what could not be verified and why>
-```
+- what could not be verified and why
 
+Rules:
 - `[blocking]` bullets are required for every fabricated reference, stub, and missed acceptance criterion.
 - `[nit]` bullets are optional improvements only — never blockers.
 - If there are no issues, say "No issues found." under Issues.
