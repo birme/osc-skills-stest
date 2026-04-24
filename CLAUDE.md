@@ -17,6 +17,10 @@ public/index.html # Single-page HTML/CSS frontend (no build step)
 package.json      # Dependencies: express only
 ```
 
+### Route pattern
+
+`index.js` mounts `express.static('public')` for all static assets AND registers an explicit `app.get('/')` that sends `public/index.html`. The static middleware alone would serve the root, but the explicit route provides a reliable `__dirname`-anchored path that is safe across working-directory changes. **Do not remove the explicit route.** New routes go below the static middleware mount.
+
 ## Build & Run
 
 ```bash
@@ -33,6 +37,7 @@ No test suite is configured. When adding tests:
 - Use `jest` or `node:test` (built-in, no extra dependency)
 - Place test files as `*.test.js` alongside the code they test
 - Add `"test": "node --test"` or `"test": "jest"` to `package.json` scripts
+- To enable integration tests with `supertest`, export `app` from `index.js` and guard `app.listen` behind `if (require.main === module)`
 
 ## Linting
 
@@ -62,6 +67,8 @@ Add `"lint": "eslint ."` to scripts.
 - No user input is processed — XSS/injection surface is minimal
 - Never commit `.env` files or secrets
 - Keep `express` updated; run `npm audit` before releases
+- When adding user-facing endpoints: set `Content-Security-Policy` and `X-Content-Type-Options` headers
+- Never use `path.join` on user-supplied input without a path-traversal guard
 
 ## CI/CD
 
