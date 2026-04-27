@@ -70,6 +70,21 @@ Add `"lint": "eslint ."` to scripts.
 - When adding user-facing endpoints: set `Content-Security-Policy` and `X-Content-Type-Options` headers
 - Never use `path.join` on user-supplied input without a path-traversal guard
 
+## Commit & PR Conventions
+
+Commit messages follow **Conventional Commits**:
+
+```
+<type>: <short description>
+```
+
+Common types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`.
+
+PR titles must match the same format. If the work closes a GitHub issue, include `Closes #NNN` in the PR description body (not the title). GitHub auto-closes the issue on squash-merge, and the issue number appears in the resulting commit (`(#NNN)`).
+
+Example PR title: `feat: add /healthz endpoint`
+Example PR body line: `Closes #42`
+
 ## CI/CD
 
 No pipeline configured. If adding GitHub Actions, the standard workflow:
