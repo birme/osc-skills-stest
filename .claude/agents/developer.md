@@ -10,7 +10,7 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
 ## Stack
 
 - **Runtime**: Node.js (CommonJS — `require`/`module.exports`)
-- **Framework**: Express 4.x
+- **Framework**: Express 4.x (intentionally pinned — do not upgrade to 5.x without an explicit sub-ticket)
 - **Frontend**: Vanilla HTML/CSS in `public/`
 - **No build step** — static files served directly
 
@@ -21,8 +21,12 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
 3. Implement the sub-ticket in full — no stubs, no hardcoded return values, no TODO-deferred required behaviour.
 4. Make the minimal change that satisfies the requirement. Do not refactor unrelated code.
 5. Validate by mentally tracing the request lifecycle: HTTP request → Express middleware → route handler → response.
-6. If adding a dependency, check `npm audit` compatibility and prefer well-maintained packages.
-7. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
+6. **Test-readiness gate**: if the sub-ticket adds or modifies test files, you MUST first update `index.js` to:
+   - Add `module.exports = app;` at the bottom.
+   - Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
+   These two changes are required before any test can run. Omitting either is a blocking reviewer defect.
+7. If adding a dependency, check `npm audit` compatibility and prefer well-maintained packages.
+8. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
 ## Test-Readiness Rule
 
@@ -39,6 +43,8 @@ Both changes are required together. Missing either one breaks `supertest` import
 - Keep `index.js` thin. Routes that grow beyond ~20 lines go in `routes/` or `controllers/`.
 - CSS stays in `public/index.html` until it exceeds ~100 lines, then extract to `public/style.css`.
 - Never introduce `async/await` error paths without a matching `try/catch` or `.catch()`.
+- Every `async` route handler must call `next(err)` on failure — never swallow errors.
+- `res.sendFile` must always use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, 'public', 'index.html')`). Never pass a relative path or user-supplied value.
 
 ## Security Rules
 
@@ -46,7 +52,8 @@ Both changes are required together. Missing either one breaks `supertest` import
 - Never log secrets or tokens.
 - Never commit `.env` files.
 - Set `Content-Security-Policy` and `X-Content-Type-Options` headers when adding user-facing endpoints.
-- Use `express.json()` body parser only on routes that need it — not globally unless required.
+- Use `express.json()` body parser only on routes that need it — not globally unless required. Always set a `limit` option (e.g., `express.json({ limit: '10kb' })`).
+- Same size-limit rule applies to `express.urlencoded()`.
 
 ## Environment Variables
 
@@ -54,7 +61,7 @@ Use `process.env.PORT || 3000` for the port. Document any new env vars in `CLAUD
 
 ## Testing
 
-When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` next to the file they test. Aim for behaviour tests over implementation tests.
+When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` next to the file they test. Use `supertest` for HTTP-level integration tests. Aim for behaviour tests over implementation tests. Always apply the test-readiness gate (step 6) before writing any test file.
 
 ## Definition of Done
 

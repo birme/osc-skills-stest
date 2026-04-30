@@ -41,13 +41,15 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Wrong HTTP status codes, incorrect Express middleware ordering, missing error handling on async paths.
 - Any `async` route handler or middleware that does not wrap its body in `try/catch` and call `next(err)` on failure is `[blocking]`.
 - Any route handler that calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path (double-send bug) is `[blocking]`.
-- If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
+- If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` via `module.exports = app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
+- `res.sendFile` must use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, ...)`). A relative path or a path derived from user input is `[blocking]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.
 - Secrets or tokens logged or hardcoded.
-- New endpoints missing `Content-Security-Policy` / `X-Content-Type-Options` headers.
-- `path.join` usage without path-traversal guards.
+- New user-facing endpoints missing `Content-Security-Policy` / `X-Content-Type-Options` headers.
+- `path.join` usage without path-traversal guards when the path includes any user-supplied segment.
+- `express.json()` or `express.urlencoded()` added without a `limit` option — unbounded request bodies are a DoS vector and MUST be flagged as `[blocking]`.
 
 ### 6. Regression risk
 - Existing routes still reachable and returning the same responses.
@@ -58,6 +60,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - `const` by default; `let` only when reassignment is needed.
 - No unnecessary comments. No commented-out code.
 - `index.js` stays thin; new logic >20 lines belongs in a dedicated module.
+- Express 4.x version constraint in `package.json` not widened to include 5.x without an explicit sub-ticket authorising the upgrade.
 
 ### 8. Dependencies
 - New `npm` package genuinely needed, or replaceable with Node built-ins?

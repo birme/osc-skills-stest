@@ -5,7 +5,7 @@
 A minimal Node.js landing page built with Express. Serves a single static HTML page from the `public/` directory.
 
 - **Language**: JavaScript (Node.js)
-- **Framework**: Express 4.x
+- **Framework**: Express 4.x (intentionally pinned — do not upgrade to 5.x without an explicit task)
 - **Entry point**: `index.js`
 - **Static assets**: `public/`
 
@@ -71,6 +71,8 @@ Add `"lint": "eslint ."` to scripts.
 - Keep `express` updated; run `npm audit` before releases
 - When adding user-facing endpoints: set `Content-Security-Policy` and `X-Content-Type-Options` headers
 - Never use `path.join` on user-supplied input without a path-traversal guard
+- `res.sendFile` must always use an absolute path anchored to `__dirname` — never a relative path or user-supplied value
+- Always pass a `limit` option to `express.json()` / `express.urlencoded()` (e.g., `{ limit: '10kb' }`) to prevent unbounded request bodies
 
 ## Commit & PR Conventions
 
