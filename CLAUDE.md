@@ -31,13 +31,15 @@ PORT=8080 npm start  # Custom port
 
 No build step — static files are served directly.
 
+`package-lock.json` is not currently committed. If you run `npm install` and a lockfile is generated, commit it so that `npm ci` produces a reproducible install in CI.
+
 ## Tests
 
 No test suite is configured. When adding tests:
 - Use `jest` or `node:test` (built-in, no extra dependency)
 - Place test files as `*.test.js` alongside the code they test
 - Add `"test": "node --test"` or `"test": "jest"` to `package.json` scripts
-- To enable integration tests with `supertest`, export `app` from `index.js` and guard `app.listen` behind `if (require.main === module)`
+- Before writing any test, update `index.js`: add `module.exports = app` and guard `app.listen` behind `if (require.main === module)`. Both changes are required — missing either breaks `supertest` imports or causes the server to start during test runs.
 
 ## Linting
 
@@ -54,7 +56,7 @@ Add `"lint": "eslint ."` to scripts.
 - `const` by default; `let` only when reassignment is needed
 - No comments unless the WHY is non-obvious
 - Keep `index.js` thin — route handlers that grow beyond ~20 lines belong in a `routes/` or `controllers/` directory
-- Inline CSS lives in `public/index.html`; extract to `public/style.css` once it exceeds ~100 lines
+- Inline CSS lives in `public/index.html`; extract to `public/style.css` once it exceeds ~100 lines (currently ~53 lines)
 
 ## Environment Variables
 

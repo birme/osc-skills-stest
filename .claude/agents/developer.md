@@ -24,6 +24,14 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
 6. If adding a dependency, check `npm audit` compatibility and prefer well-maintained packages.
 7. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
+## Test-Readiness Rule
+
+If the sub-ticket introduces tests or adds a test runner to `package.json`, you MUST update `index.js` before opening the PR:
+1. Add `module.exports = app;` at the bottom of `index.js`.
+2. Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
+
+Both changes are required together. Missing either one breaks `supertest` imports or causes the server to bind a port during test runs.
+
 ## Coding Standards
 
 - `const` by default; `let` only when reassignment is required.
@@ -54,5 +62,6 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 - Code runs without errors.
 - Existing behaviour is unchanged unless that was the explicit goal.
 - No new linting errors (if ESLint is configured).
+- If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
 - CLAUDE.md updated if a new env var or convention was introduced.
 - PR opened and handed off. Work stops here.

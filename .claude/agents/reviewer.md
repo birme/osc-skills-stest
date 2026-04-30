@@ -41,7 +41,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Wrong HTTP status codes, incorrect Express middleware ordering, missing error handling on async paths.
 - Any `async` route handler or middleware that does not wrap its body in `try/catch` and call `next(err)` on failure is `[blocking]`.
 - Any route handler that calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path (double-send bug) is `[blocking]`.
-- If the diff adds or modifies test files: verify that `index.js` exports `app` and that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
+- If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.
@@ -62,6 +62,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 ### 8. Dependencies
 - New `npm` package genuinely needed, or replaceable with Node built-ins?
 - Package actively maintained and free of critical `npm audit` findings?
+- If `package.json` dependencies changed, verify `package-lock.json` is also updated in the diff (or note its absence as a risk).
 
 ### 9. Documentation
 - New env vars documented in `CLAUDE.md`?
