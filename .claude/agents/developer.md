@@ -25,8 +25,9 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
    - Add `module.exports = app;` at the bottom.
    - Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
    These two changes are required before any test can run. Omitting either is a blocking reviewer defect.
-7. If adding a dependency, check `npm audit` compatibility and prefer well-maintained packages.
-8. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
+7. If adding a dependency, check `npm audit --audit-level=high` compatibility and prefer well-maintained packages. The audit must be clean at `high` severity before opening the PR.
+8. Smoke-test the entry point: run `node -e "require('./index.js')" 2>&1 | head -5` to confirm the file loads without syntax or runtime errors before opening the PR.
+9. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
 ## Test-Readiness Rule
 
@@ -66,9 +67,10 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 ## Definition of Done
 
 - Every acceptance criterion from the sub-ticket is satisfied — verified, not assumed.
-- Code runs without errors.
+- Code runs without errors (`node -e "require('./index.js')"` exits cleanly).
 - Existing behaviour is unchanged unless that was the explicit goal.
 - No new linting errors (if ESLint is configured).
 - If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
+- `npm audit --audit-level=high` is clean if dependencies were added or changed.
 - CLAUDE.md updated if a new env var or convention was introduced.
 - PR opened and handed off. Work stops here.

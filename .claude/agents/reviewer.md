@@ -43,6 +43,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Any route handler that calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path (double-send bug) is `[blocking]`.
 - If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` via `module.exports = app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 - `res.sendFile` must use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, ...)`). A relative path or a path derived from user input is `[blocking]`.
+- If the diff adds new middleware, verify it is mounted in the correct position relative to `express.static('public')` and existing route definitions. Middleware that must apply to all routes must appear before `app.get('/')`. Incorrect ordering is `[blocking]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.
@@ -65,6 +66,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 ### 8. Dependencies
 - New `npm` package genuinely needed, or replaceable with Node built-ins?
 - Package actively maintained and free of critical `npm audit` findings?
+- If the diff adds or changes any dependency, confirm `npm audit --audit-level=high` is clean. A PR that introduces a high-severity vulnerability is `[blocking]`.
 - If `package.json` dependencies changed, verify `package-lock.json` is also updated in the diff (or note its absence as a risk).
 
 ### 9. Documentation

@@ -41,6 +41,8 @@ No test suite is configured. When adding tests:
 - Add `"test": "node --test"` or `"test": "jest"` to `package.json` scripts
 - Before writing any test, update `index.js`: add `module.exports = app` and guard `app.listen` behind `if (require.main === module)`. Both changes are required — missing either breaks `supertest` imports or causes the server to start during test runs.
 
+**Current state**: `index.js` does not yet export `app` and does not guard `app.listen`. The first PR that introduces any test file must also make both of these changes to `index.js`, otherwise the test process will bind the port and hang.
+
 ## Linting
 
 No linter configured. Recommended setup:
@@ -68,7 +70,7 @@ Add `"lint": "eslint ."` to scripts.
 
 - No user input is processed — XSS/injection surface is minimal
 - Never commit `.env` files or secrets
-- Keep `express` updated; run `npm audit` before releases
+- Keep `express` updated; run `npm audit --audit-level=high` before releases — PRs adding dependencies must be clean at `high` severity
 - When adding user-facing endpoints: set `Content-Security-Policy` and `X-Content-Type-Options` headers
 - Never use `path.join` on user-supplied input without a path-traversal guard
 - `res.sendFile` must always use an absolute path anchored to `__dirname` — never a relative path or user-supplied value
