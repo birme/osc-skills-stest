@@ -44,6 +44,8 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` via `module.exports = app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 - `res.sendFile` must use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, ...)`). A relative path or a path derived from user input is `[blocking]`.
 - If the diff adds new middleware, verify it is mounted in the correct position relative to `express.static('public')` and existing route definitions. Middleware that must apply to all routes must appear before `app.get('/')`. Incorrect ordering is `[blocking]`.
+- Any error-handling middleware that declares **fewer than 4 parameters** is silently ignored by Express (treated as regular middleware). A 3-param error handler is `[blocking]`.
+- Any 404 catch-all or error middleware mounted **before** route definitions fails to catch intended requests — `[blocking]`. Correct order: routes → 404 handler → error handler.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.

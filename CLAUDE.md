@@ -60,6 +60,23 @@ Add `"lint": "eslint ."` to scripts.
 - Keep `index.js` thin — route handlers that grow beyond ~20 lines belong in a `routes/` or `controllers/` directory
 - Inline CSS lives in `public/index.html`; extract to `public/style.css` once it exceeds ~100 lines (currently ~53 lines)
 
+## Error & 404 Handling
+
+Express matches middleware by parameter count. An error-handling middleware **must** declare exactly 4 parameters `(err, req, res, next)` — a 3-parameter signature is silently treated as regular middleware and errors bypass it entirely.
+
+Both a 404 catch-all and an error handler must be mounted **after** all route definitions:
+
+```js
+// After all app.get / app.post / etc.
+app.use((req, res) => res.status(404).send('Not found'));         // 404 — 3 params
+app.use((err, req, res, next) => {                               // error — 4 params
+  console.error(err);
+  res.status(500).send('Internal server error');
+});
+```
+
+Neither handler is present in `index.js` yet. When adding them, order matters: 404 handler before error handler, both after all routes.
+
 ## Environment Variables
 
 | Variable | Default | Purpose |

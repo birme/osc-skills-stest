@@ -56,6 +56,8 @@ if (require.main === module) {
 - `res.sendFile` must always use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, 'public', 'index.html')`). Never pass a relative path or user-supplied value.
 - Never call `next()` on the same code path as `res.send`, `res.json`, `res.redirect`, or `res.end` — this causes a double-response crash.
 - Prefer route-scoped `router.use(express.json())` over global `app.use(express.json())` unless every route needs it.
+- Express error middleware **must** declare exactly 4 parameters `(err, req, res, next)`. A 3-parameter function is silently treated as regular middleware — errors pass through unhandled with no warning.
+- 404 catch-all and error middleware must be mounted **after** all route definitions. Order: routes → 404 handler → error handler.
 
 ## Security Rules
 
@@ -82,5 +84,6 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 - No new linting errors (if ESLint is configured).
 - If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
 - `npm audit --audit-level=high` is clean if dependencies were added or changed.
+- If error middleware was added: it declares exactly 4 parameters and is mounted after all routes.
 - CLAUDE.md updated if a new env var or convention was introduced.
 - PR opened and handed off. Work stops here.
