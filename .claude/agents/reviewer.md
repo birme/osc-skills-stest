@@ -40,7 +40,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 ### 4. Correctness
 - Wrong HTTP status codes, incorrect Express middleware ordering, missing error handling on async paths.
 - Any `async` route handler or middleware that does not wrap its body in `try/catch` and call `next(err)` on failure is `[blocking]`.
-- Any route handler that calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path (double-send bug) is `[blocking]`.
+- Any route handler or middleware that **either** (a) calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path, **or** (b) calls `next()` and then also sends a response on the same code path, is a double-send bug and is `[blocking]`.
 - If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` via `module.exports = app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 - `res.sendFile` must use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, ...)`). A relative path or a path derived from user input is `[blocking]`.
 - If the diff adds new middleware, verify it is mounted in the correct position relative to `express.static('public')` and existing route definitions. Middleware that must apply to all routes must appear before `app.get('/')`. Incorrect ordering is `[blocking]`.
@@ -54,7 +54,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 
 ### 6. Regression risk
 - Existing routes still reachable and returning the same responses.
-- `express.static('public')` mount still present and before any new route definitions.
+- `express.static('public')` mount still present and positioned **before** any new route definitions — middleware order determines precedence in Express.
 
 ### 7. Conventions
 - CommonJS (`require`) — not ESM `import` unless `package.json` has `"type": "module"`.
@@ -62,6 +62,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - No unnecessary comments. No commented-out code.
 - `index.js` stays thin; new logic >20 lines belongs in a dedicated module.
 - Express 4.x version constraint in `package.json` not widened to include 5.x without an explicit sub-ticket authorising the upgrade.
+- `express.json()` applied globally via `app.use(express.json())` when only specific routes require it — flag as `[nit]` with a suggestion to scope it to those routes.
 
 ### 8. Dependencies
 - New `npm` package genuinely needed, or replaceable with Node built-ins?

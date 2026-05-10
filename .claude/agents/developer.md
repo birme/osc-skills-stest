@@ -37,6 +37,14 @@ If the sub-ticket introduces tests or adds a test runner to `package.json`, you 
 
 Both changes are required together. Missing either one breaks `supertest` imports or causes the server to bind a port during test runs.
 
+```js
+// index.js — testability pattern
+module.exports = app;
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+```
+
 ## Coding Standards
 
 - `const` by default; `let` only when reassignment is required.
@@ -46,6 +54,8 @@ Both changes are required together. Missing either one breaks `supertest` import
 - Never introduce `async/await` error paths without a matching `try/catch` or `.catch()`.
 - Every `async` route handler must call `next(err)` on failure — never swallow errors.
 - `res.sendFile` must always use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, 'public', 'index.html')`). Never pass a relative path or user-supplied value.
+- Never call `next()` on the same code path as `res.send`, `res.json`, `res.redirect`, or `res.end` — this causes a double-response crash.
+- Prefer route-scoped `router.use(express.json())` over global `app.use(express.json())` unless every route needs it.
 
 ## Security Rules
 

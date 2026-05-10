@@ -74,6 +74,8 @@ Add `"lint": "eslint ."` to scripts.
 - When adding user-facing endpoints: set `Content-Security-Policy` and `X-Content-Type-Options` headers
 - Never use `path.join` on user-supplied input without a path-traversal guard
 - `res.sendFile` must always use an absolute path anchored to `__dirname` — never a relative path or user-supplied value
+- Never call `next()` on the same code path as `res.send`/`res.json`/`res.end` — this causes a double-response crash
+- Use `express.json()` only on routes that need it; avoid `app.use(express.json())` globally unless all routes require a body
 - Always pass a `limit` option to `express.json()` / `express.urlencoded()` (e.g., `{ limit: '10kb' }`) to prevent unbounded request bodies
 
 ## Commit & PR Conventions
