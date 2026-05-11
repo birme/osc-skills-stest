@@ -25,7 +25,7 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
    - Add `module.exports = app;` at the bottom.
    - Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
    These two changes are required before any test can run. Omitting either is a blocking reviewer defect.
-7. If adding a dependency, check `npm audit --audit-level=high` compatibility and prefer well-maintained packages. The audit must be clean at `high` severity before opening the PR.
+7. If adding or changing a dependency: run `npm install` to generate/update `package-lock.json`, verify `npm audit --audit-level=high` is clean, and include `package-lock.json` in the PR. Prefer well-maintained packages. A PR that changes `package.json` without a matching lockfile will fail `npm ci` in CI.
 8. Smoke-test the entry point: run `node -e "require('./index.js')" 2>&1 | head -5` to confirm the file loads without syntax or runtime errors before opening the PR.
 9. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
@@ -83,7 +83,7 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 - Existing behaviour is unchanged unless that was the explicit goal.
 - No new linting errors (if ESLint is configured).
 - If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
-- `npm audit --audit-level=high` is clean if dependencies were added or changed.
+- If `package.json` dependencies were added or changed: `npm install` was run, `package-lock.json` is staged in the PR, and `npm audit --audit-level=high` is clean.
 - If error middleware was added: it declares exactly 4 parameters and is mounted after all routes.
 - CLAUDE.md updated if a new env var or convention was introduced.
 - PR opened and handed off. Work stops here.

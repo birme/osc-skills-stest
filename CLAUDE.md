@@ -31,7 +31,7 @@ PORT=8080 npm start  # Custom port
 
 No build step — static files are served directly.
 
-`package-lock.json` is not currently committed. If you run `npm install` and a lockfile is generated, commit it so that `npm ci` produces a reproducible install in CI.
+`package-lock.json` is not currently committed. **The first PR that modifies `package.json` dependencies must include `package-lock.json`.** Always run `npm install` after changing dependencies and stage the lockfile — `npm ci` (used in CI) requires it and will fail without it.
 
 ## Tests
 

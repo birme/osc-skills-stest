@@ -70,7 +70,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - New `npm` package genuinely needed, or replaceable with Node built-ins?
 - Package actively maintained and free of critical `npm audit` findings?
 - If the diff adds or changes any dependency, confirm `npm audit --audit-level=high` is clean. A PR that introduces a high-severity vulnerability is `[blocking]`.
-- If `package.json` dependencies changed, verify `package-lock.json` is also updated in the diff (or note its absence as a risk).
+- If `package.json` dependencies changed and `package-lock.json` is absent from the diff: `[blocking]`. `npm ci` (used in CI) requires a lockfile and will fail without it.
 
 ### 9. Documentation
 - New env vars documented in `CLAUDE.md`?
