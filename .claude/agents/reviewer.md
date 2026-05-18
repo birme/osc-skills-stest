@@ -24,6 +24,10 @@ For every new symbol, function call, type, and endpoint introduced in the diff:
 - `grep` for it in the actual repo source.
 - Anything that does not resolve to a real definition is a **fabricated reference** and MUST be flagged as `[blocking]`.
 
+For every new `require('<package>')` call in the diff where `<package>` is not a Node.js built-in module (e.g. `path`, `fs`, `http`, `crypto`, `os`, `url`, `events`, `stream`, `util`):
+- Verify the package appears in `dependencies` or `devDependencies` in `package.json`.
+- A package referenced in `require()` but absent from `package.json` is a fabricated dependency — `[blocking]`.
+
 ### 2. Stub and mock detection
 Scan the diff for:
 - Hardcoded return values on new functions (e.g. `return true`, `return []`, `return { id: 1 }` with no real logic).
@@ -43,9 +47,11 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Any route handler or middleware that **either** (a) calls `res.send`, `res.json`, `res.redirect`, or `res.end` more than once on the same code path, **or** (b) calls `next()` and then also sends a response on the same code path, is a double-send bug and is `[blocking]`.
 - If the diff adds or modifies test files, OR if `package.json` gains a test runner in `devDependencies` (e.g. `jest`, `node:test` script, `supertest`): verify that `index.js` exports `app` via `module.exports = app` AND that `app.listen` is guarded by `if (require.main === module)`. Missing either is `[blocking]`.
 - `res.sendFile` must use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, ...)`). A relative path or a path derived from user input is `[blocking]`.
+- If the diff adds new middleware that must apply to all routes, verify it is mounted **before** `app.get('/')`. Middleware mounted after an existing route definition does not execute for requests already matched. Incorrect ordering is `[blocking]`.
 - If the diff adds new middleware, verify it is mounted in the correct position relative to `express.static('public')` and existing route definitions. Middleware that must apply to all routes must appear before `app.get('/')`. Incorrect ordering is `[blocking]`.
 - Any error-handling middleware that declares **fewer than 4 parameters** is silently ignored by Express (treated as regular middleware). A 3-param error handler is `[blocking]`.
 - Any 404 catch-all or error middleware mounted **before** route definitions fails to catch intended requests — `[blocking]`. Correct order: routes → 404 handler → error handler.
+- Duplicate `require()` for the same module that is already imported at the top of `index.js` (e.g., adding `const path = require('path')` when it is already present) — flag as `[nit]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.

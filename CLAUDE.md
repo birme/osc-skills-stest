@@ -21,6 +21,10 @@ package.json      # Dependencies: express only
 
 `index.js` mounts `express.static('public')` for all static assets AND registers an explicit `app.get('/')` that sends `public/index.html`. The static middleware alone would serve the root, but the explicit route provides a reliable `__dirname`-anchored path that is safe across working-directory changes. **Do not remove the explicit route.** New routes go below the static middleware mount.
 
+### Modules already imported in `index.js`
+
+`require('express')` and `require('path')` are already present at the top of `index.js`. Do not add duplicate `require()` calls for either. Before adding any new `require()`, scan the existing imports to avoid duplication.
+
 ## Build & Run
 
 ```bash

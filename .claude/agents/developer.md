@@ -17,17 +17,18 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
 ## Workflow
 
 1. Read the sub-ticket body and extract every acceptance criterion before writing any code.
-2. Read the relevant files before editing (`index.js`, `public/index.html`, `package.json`).
+2. Read the relevant files before editing (`index.js`, `public/index.html`, `package.json`). When adding a `require()` call, first scan the existing imports in `index.js` — `express` and `path` are already required; do not add duplicate imports for either.
 3. Implement the sub-ticket in full — no stubs, no hardcoded return values, no TODO-deferred required behaviour.
 4. Make the minimal change that satisfies the requirement. Do not refactor unrelated code.
-5. Validate by mentally tracing the request lifecycle: HTTP request → Express middleware → route handler → response.
-6. **Test-readiness gate**: if the sub-ticket adds or modifies test files, you MUST first update `index.js` to:
+5. Before calling `require('<package>')` for any npm package (not a Node.js built-in), verify the package is listed in `package.json` under `dependencies` or `devDependencies`. If it isn't, install it with `npm install <package>` and include the updated `package-lock.json` in the PR.
+6. Validate by mentally tracing the request lifecycle: HTTP request → Express middleware → route handler → response.
+7. **Test-readiness gate**: if the sub-ticket adds or modifies test files, you MUST first update `index.js` to:
    - Add `module.exports = app;` at the bottom.
    - Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
    These two changes are required before any test can run. Omitting either is a blocking reviewer defect.
-7. If adding or changing a dependency: run `npm install` to generate/update `package-lock.json`, verify `npm audit --audit-level=high` is clean, and include `package-lock.json` in the PR. Prefer well-maintained packages. A PR that changes `package.json` without a matching lockfile will fail `npm ci` in CI.
-8. Smoke-test the entry point: run `node -e "require('./index.js')" 2>&1 | head -5` to confirm the file loads without syntax or runtime errors before opening the PR.
-9. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
+8. If adding or changing a dependency: run `npm install` to generate/update `package-lock.json`, verify `npm audit --audit-level=high` is clean, and include `package-lock.json` in the PR. Prefer well-maintained packages. A PR that changes `package.json` without a matching lockfile will fail `npm ci` in CI.
+9. Smoke-test the entry point: run `node -e "require('./index.js')" 2>&1 | head -5` to confirm the file loads without syntax or runtime errors before opening the PR.
+10. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
 ## Test-Readiness Rule
 
@@ -58,6 +59,7 @@ if (require.main === module) {
 - Prefer route-scoped `router.use(express.json())` over global `app.use(express.json())` unless every route needs it.
 - Express error middleware **must** declare exactly 4 parameters `(err, req, res, next)`. A 3-parameter function is silently treated as regular middleware — errors pass through unhandled with no warning.
 - 404 catch-all and error middleware must be mounted **after** all route definitions. Order: routes → 404 handler → error handler.
+- New middleware that must apply to all routes must be mounted **before** `app.get('/')`. Middleware added after an existing route definition does not execute for requests that matched the earlier route.
 
 ## Security Rules
 
@@ -74,7 +76,7 @@ Use `process.env.PORT || 3000` for the port. Document any new env vars in `CLAUD
 
 ## Testing
 
-When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` next to the file they test. Use `supertest` for HTTP-level integration tests. Aim for behaviour tests over implementation tests. Always apply the test-readiness gate (step 6) before writing any test file.
+When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` next to the file they test. Use `supertest` for HTTP-level integration tests. Aim for behaviour tests over implementation tests. Always apply the test-readiness gate (step 7) before writing any test file.
 
 ## Definition of Done
 
@@ -85,5 +87,6 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 - If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
 - If `package.json` dependencies were added or changed: `npm install` was run, `package-lock.json` is staged in the PR, and `npm audit --audit-level=high` is clean.
 - If error middleware was added: it declares exactly 4 parameters and is mounted after all routes.
+- No duplicate `require()` calls for the same module in `index.js`.
 - CLAUDE.md updated if a new env var or convention was introduced.
 - PR opened and handed off. Work stops here.
