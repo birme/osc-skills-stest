@@ -52,6 +52,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Any error-handling middleware that declares **fewer than 4 parameters** is silently ignored by Express (treated as regular middleware). A 3-param error handler is `[blocking]`.
 - Any 404 catch-all or error middleware mounted **before** route definitions fails to catch intended requests — `[blocking]`. Correct order: routes → 404 handler → error handler.
 - Duplicate `require()` for the same module that is already imported at the top of `index.js` (e.g., adding `const path = require('path')` when it is already present) — flag as `[nit]`.
+- If the diff adds `app.listen` without a `if (require.main === module)` guard, and `module.exports = app` is not present, flag as `[nit]` (pre-empts future test-readiness work). If tests exist or are being added in the same PR, this is `[blocking]`.
 
 ### 5. Security
 - User input (query params, body, headers) used without sanitisation.
@@ -71,6 +72,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - `index.js` stays thin; new logic >20 lines belongs in a dedicated module.
 - Express 4.x version constraint in `package.json` not widened to include 5.x without an explicit sub-ticket authorising the upgrade.
 - `express.json()` applied globally via `app.use(express.json())` when only specific routes require it — flag as `[nit]` with a suggestion to scope it to those routes.
+- PR title must follow Conventional Commits format: `<type>: <short description>`. Common types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`. A PR title that does not match this format (e.g. missing type prefix, sentence-case description, trailing period) — flag as `[nit]`.
 
 ### 8. Dependencies
 - New `npm` package genuinely needed, or replaceable with Node built-ins?

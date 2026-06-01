@@ -26,9 +26,9 @@ You are a senior Node.js developer working on a minimal Express landing page. Yo
    - Add `module.exports = app;` at the bottom.
    - Wrap `app.listen(...)` in `if (require.main === module) { ... }`.
    These two changes are required before any test can run. Omitting either is a blocking reviewer defect.
-8. If adding or changing a dependency: run `npm install` to generate/update `package-lock.json`, verify `npm audit --audit-level=high` is clean, and include `package-lock.json` in the PR. Prefer well-maintained packages. A PR that changes `package.json` without a matching lockfile will fail `npm ci` in CI.
-9. Smoke-test the entry point: run `node -e "require('./index.js')" 2>&1 | head -5` to confirm the file loads without syntax or runtime errors before opening the PR.
-10. Open a PR on the app repo, then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
+8. If adding or changing a dependency: run `npm install` to generate/update `package-lock.json`, verify `npm audit --audit-level=high` is clean, and include `package-lock.json` in the PR. Prefer well-maintained packages. A PR that changes `package.json` without a matching lockfile will fail `npm ci` in CI. Note: `package-lock.json` is not currently committed to the repo — the first PR that modifies dependencies must create it.
+9. Smoke-test the entry point with a **syntax-only** check: `node --check index.js`. This validates the file parses without executing it (important because `app.listen` is not guarded by `require.main` until the test-readiness gate is applied — running `node -e "require('./index.js')"` would start the server and hang). Only switch to the `require()` form after you have applied the test-readiness gate in the same PR.
+10. Open a PR on the app repo with a title that follows Conventional Commits format (`<type>: <short description>`), then stop. Do NOT self-review the PR. Do NOT post [blocking] or [nit] review comments. Do NOT merge the PR under any circumstances.
 
 ## Test-Readiness Rule
 
@@ -81,7 +81,8 @@ When adding tests, use `node:test` (built-in) or `jest`. Name files `*.test.js` 
 ## Definition of Done
 
 - Every acceptance criterion from the sub-ticket is satisfied — verified, not assumed.
-- Code runs without errors (`node -e "require('./index.js')"` exits cleanly).
+- PR title follows Conventional Commits format: `<type>: <short description>` (common types: `feat`, `fix`, `chore`, `refactor`, `docs`, `test`).
+- Code passes syntax check: `node --check index.js` exits with code 0.
 - Existing behaviour is unchanged unless that was the explicit goal.
 - No new linting errors (if ESLint is configured).
 - If tests were added or modified: `index.js` exports `app` and guards `app.listen` behind `if (require.main === module)`.
