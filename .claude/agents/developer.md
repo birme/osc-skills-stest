@@ -55,6 +55,7 @@ if (require.main === module) {
 - Never introduce `async/await` error paths without a matching `try/catch` or `.catch()`.
 - Every `async` route handler must call `next(err)` on failure — never swallow errors.
 - `res.sendFile` must always use an absolute path anchored to `__dirname` (e.g., `path.join(__dirname, 'public', 'index.html')`). Never pass a relative path or user-supplied value.
+- `express.static` must use `path.join(__dirname, 'public')`, not a bare `'public'` string. A bare string resolves from `process.cwd()`, not the script's directory — they differ when the server is started from a different working directory. The existing `express.static('public')` in `index.js` is a known deviation; correct it if that line is touched.
 - Never call `next()` on the same code path as `res.send`, `res.json`, `res.redirect`, or `res.end` — this causes a double-response crash.
 - Prefer route-scoped `router.use(express.json())` over global `app.use(express.json())` unless every route needs it.
 - Express error middleware **must** declare exactly 4 parameters `(err, req, res, next)`. A 3-parameter function is silently treated as regular middleware — errors pass through unhandled with no warning.

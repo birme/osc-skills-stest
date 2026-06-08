@@ -59,6 +59,7 @@ For each acceptance criterion extracted from the sub-ticket body, state explicit
 - Secrets or tokens logged or hardcoded.
 - New user-facing endpoints missing `Content-Security-Policy` / `X-Content-Type-Options` headers.
 - `path.join` usage without path-traversal guards when the path includes any user-supplied segment.
+- `express.static('<path>')` called with a bare relative string (not anchored to `path.join(__dirname, ...)`) — flag new instances as `[nit]`. The existing `express.static('public')` in `index.js` is a known deviation; flag it only if the line is being modified in the diff.
 - `express.json()` or `express.urlencoded()` added without a `limit` option — unbounded request bodies are a DoS vector and MUST be flagged as `[blocking]`.
 
 ### 6. Regression risk
